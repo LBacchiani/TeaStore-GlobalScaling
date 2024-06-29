@@ -1,0 +1,71 @@
+module Main;
+
+export *;
+import * from Monitor;
+import * from Architecture;
+import * from ABS.DC;
+import * from Setup;
+import * from WebUIDeployment;
+import * from AuthDeployment;
+import * from PersistenceDeployment;
+import * from ImageDeployment;
+import * from RecommenderDeployment;
+import * from ScaleWrapper;
+import * from Param;
+import * from WorkloadGenerator;
+
+
+{
+
+    CloudProvider cp = new CloudProvider("CloudProvider");
+    PrometheusInterface prometheus = new Prometheus();
+
+    foreach(m in metrics()) {
+        foreach(s in services()) await prometheus!init(m, s);
+    }
+
+    ////SETUP///
+    Setup setup = new Setup(cp, prometheus);
+    await setup!deploy();
+    List<ImageLoadBalancerInterface> imageLBList = await setup!getImageLoadBalancerInterface();
+    ImageLoadBalancerInterface imageLB = head(imageLBList);
+
+    List<AuthLoadBalancerInterface> authLBList = await setup!getAuthLoadBalancerInterface();
+    AuthLoadBalancerInterface authLB = head(authLBList);
+
+    List<RecommenderLoadBalancerInterface> recommenderLBList = await setup!getRecommenderLoadBalancerInterface();
+    RecommenderLoadBalancerInterface recommenderLB = head(recommenderLBList);
+
+    List<PersistenceLoadBalancerInterface> persistenceLBList = await setup!getPersistenceLoadBalancerInterface();
+    PersistenceLoadBalancerInterface persistenceLB = head(persistenceLBList);
+
+    List<WebUILoadBalancerInterface> webUILBList = await setup!getWebUILoadBalancerInterface();
+    WebUILoadBalancerInterface webUILB = head(webUILBList);
+
+
+    ////WRAPPERS///
+    WebUIDeployment webUID = new WebUIDeployment(cp, prometheus, webUILB, persistenceLB, authLB, imageLB, recommenderLB);
+    WrapperInterface webUIWrapper = new Wrapper(webUID, null, null, null, null);
+
+    AuthDeployment authD = new AuthDeployment(cp, prometheus, authLB, persistenceLB);
+    WrapperInterface authWrapper = new Wrapper(null, null, authD, null, null);
+
+    PersistenceDeployment persD = new PersistenceDeployment(cp, prometheus, persistenceLB);
+    WrapperInterface persWrapper = new Wrapper(null, persD, null, null, null);
+
+    ImageDeployment imageD = new ImageDeployment(cp, prometheus, imageLB);
+    WrapperInterface imageWrapper = new Wrapper(null, null, null, imageD, null);
+
+    RecommenderDeployment recommenderD = new RecommenderDeployment(cp, prometheus, recommenderLB);
+    WrapperInterface recommenderWrapper = new Wrapper(null, null, null, null, recommenderD);
+
+    ////MONITORS///
+    MonitorInterface m1 = new Monitor(prometheus, "WebUI", webUIWrapper, 1);
+    MonitorInterface m2 = new Monitor(prometheus, "Auth", authWrapper, 1);
+    MonitorInterface m3 = new Monitor(prometheus, "Image", persWrapper, 1);
+    MonitorInterface m4 = new Monitor(prometheus, "Persistence", imageWrapper, 1);
+    MonitorInterface m5 = new Monitor(prometheus, "Recommender", recommenderWrapper, 1);
+
+    new WorkloadGenerator(prometheus, webUILB);
+
+}

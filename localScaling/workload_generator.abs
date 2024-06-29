@@ -1,0 +1,45 @@
+module WorkloadGenerator;
+
+export *;
+import * from Param;
+import * from Architecture;
+
+
+
+interface WorkloadGeneratorInterface {}
+
+class WorkloadGenerator(PrometheusInterface prometheus, WebUILoadBalancerInterface webUI) implements WorkloadGeneratorInterface {
+
+    Rat time = 0;
+    Int i = 0;
+    String allocated_instances = "";
+
+    Unit run() {
+        while(time <= simulation_duration()) {
+            Rat completed_global = await prometheus!getV("completed global", "");
+            Rat latency_global = await prometheus!getV("latency global", "");
+            allocated_instances = this.allocated_instances();
+            if (latency_global == 0) completed_global = 1;
+            // println("[Time: " + toString(time) + " Request: " + toString(currentMessageNumber) + " Latency: " + toString(when completed_global > 0 then float(latency_global/completed_global) else -1.0) + " " + allocated_instances + "]");
+            Rat currentMessageNumber = nth(actual_workload(), i);
+            i = (i + 1) % length(actual_workload());
+            Int j = 0;
+            while(j < currentMessageNumber) {
+                webUI!request();
+                await duration(sendingWin() / currentMessageNumber);
+                j = j + 1;
+            }
+            time = time + (sendingWin()/time_unit_to_sec());
+        }
+        // println("[Time: " + toString(time) + " Request: " + toString(currentMessageNumber) + " Latency: " + toString(when completed_global > 0 then float(latency_global/completed_global) else -1.0) + " " + allocated_instances + "]");
+    }
+
+    String allocated_instances() {
+        String instances = "";
+        foreach(s in services()) {
+            Rat i = await prometheus!getV("instances", s);
+            instances = instances + " " + s + ":" + toString(i); 
+        }
+        return "{" + instances + "}";
+    }
+}

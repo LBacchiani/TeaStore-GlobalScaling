@@ -1,0 +1,1 @@
+../../abstools/frontend/bin/bash/absc --erlang *.abs timedsmartdepl-orchs/*.abs

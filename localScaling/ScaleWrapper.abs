@@ -1,0 +1,33 @@
+module ScaleWrapper;
+
+export *;
+
+import * from WebUIDeployment;
+import * from PersistenceDeployment;
+import * from AuthDeployment;
+import * from ImageDeployment;
+import * from RecommenderDeployment;
+
+interface WrapperInterface {
+    Unit deploy();
+    Unit undeploy();
+}
+
+class Wrapper(WebUIDeployment webUID, PersistenceDeployment persistenceD, AuthDeployment authD, ImageDeployment imageD, RecommenderDeployment recommenderD) implements WrapperInterface {
+
+    Unit deploy() {
+        if(webUID != null) webUID!deploy();
+        else if(persistenceD != null) persistenceD!deploy();
+        else if(authD != null) authD!deploy();
+        else if(imageD != null) imageD!deploy();
+        else if(recommenderD != null) recommenderD!deploy();
+    }
+
+    Unit undeploy() {
+        if(webUID != null) webUID!undeploy();
+        else if(persistenceD != null) persistenceD!undeploy();
+        else if(authD != null) authD!undeploy();
+        else if(imageD != null) imageD!undeploy();
+        else if(recommenderD != null) recommenderD!undeploy();
+    }
+}
