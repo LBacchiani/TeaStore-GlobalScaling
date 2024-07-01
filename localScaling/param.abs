@@ -2,7 +2,7 @@
 
  export *;
 
-def Rat time_unit_to_sec() = 1000; //1 sec = 1 time unit
+def Rat time_unit_to_sec() = 30; //1 ms = 1 time unit
 def Rat buffer_size() = 5000;
 def Rat speed_per_core() = 5;
 def Rat monitoring_window() = 10 * time_unit_to_sec(); 
@@ -11,12 +11,12 @@ def String metric_for_scaling() = "MCL"; //"MCL" for scaling based on the servic
 def List<String> services() = list["WebUI", "Auth", "Persistence", "Recommender", "Image"];
 def Map<String,Rat> serviceMCLs() = map[Pair("WebUI", webUIMCL()), Pair("Auth", authMCL()), Pair("Image", imageMCL()),
                                         Pair("Recommender", recommenderMCL()), Pair("Persistence", persistenceMCL())];
-def Map<String,Rat> cores() = map[Pair("WebUI", webUICores()/1000), Pair("Auth", authCores()/1000), Pair("Image", imageCores()/1000),
-                                        Pair("Recommender", recommenderCores()/1000), Pair("Persistence", persistenceCores()/1000)];
+// def Map<String,Rat> cores() = map[Pair("WebUI", webUICores()/1000), Pair("Auth", authCores()/1000), Pair("Image", imageCores()/1000),
+                                        // Pair("Recommender", recommenderCores()/1000), Pair("Persistence", persistenceCores()/1000)];
 
 
 def List<String> metrics() = list["latency", "total request", "request loss", "waiting", "completed", "instances"];
-def Rat simulation_duration() = time_unit_to_sec() * 200;
+def Rat simulation_duration() = 200 * time_unit_to_sec();
 
 
 
@@ -41,9 +41,9 @@ def Rat imageMem() = 512; //MB
 
 //WORKLOAD
 
-def List<Int> actual_workload() = list[/*10, 5, 2, 2, 25, 22, 17, 20, 22, 27,
+def List<Int> actual_workload() = list[10, 5, 2, 2, 25, 22, 17, 20, 22, 27,
                                   7, 17, 12, 50, 52, 30, 22, 17, 90, 120,
-                                  40, 37, 35, 80, 75, 15, 165, 535, 497, 507,*/
+                                  40, 37, 35, 80, 75, 15, 165, 535, 497, 507,
                                   522, 507, 510, 557, 610, 617, 610, 675, 665, 640,
                                   635, 612, 602, 597, 575, 585, 560, 555, 597, 590,
                                   590, 590, 582, 542, 535, 557, 565, 587, 672, 710,

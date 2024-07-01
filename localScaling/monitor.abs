@@ -19,7 +19,6 @@ class Monitor(PrometheusInterface prometheus, String serviceName, WrapperInterfa
             Rat loss = await prometheus!getV("request loss", serviceName);
             Rat completed = await prometheus!getV("completed", serviceName);
             Rat instances = await prometheus!getV("instances", serviceName);
-            Rat waiting = await prometheus!getV("waiting", serviceName);
             Rat avg_lat = 0;
             Rat throughput = time_unit_to_sec() * total_req / monitoring_window();
             Rat add_throughput = time_unit_to_sec() * (total_req - completed) / monitoring_window();
@@ -27,9 +26,9 @@ class Monitor(PrometheusInterface prometheus, String serviceName, WrapperInterfa
             if(completed != 0) avg_lat = latency/completed;
             Rat mcl = lookupUnsafe(serviceMCLs(), serviceName);
             Int target = ceil(float(throughput/mcl));
+            // println(serviceName + "[Time: " + toString(time) + " Latency: " + toString(float(avg_lat)) + " Instances: " + toString(instances) + " Request Throughput: " + toString(float(throughput)) +  " Response Throughput: " + toString(float(compl_throughput)) + "]");
             if(target > instances) this!scaleUp(target - instances);
             else if(target < instances) this!scaleDown(instances - target);    
-            println(serviceName + "[Time: " + toString(time) + " Latency: " + toString(float(avg_lat)) + "s Instances: " + toString(instances) + " Request Throughput: " + toString(float(throughput)) +  " Waiting: " + toString(float(add_throughput)) + " Response Throughput: " + toString(float(compl_throughput)) + "]");
             time = time + (monitoring_window()/time_unit_to_sec());      
         }
     }

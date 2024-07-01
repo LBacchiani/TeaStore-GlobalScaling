@@ -152,7 +152,7 @@ class ImageDeployment(CloudProvider cloudProvider, PrometheusInterface prometheu
 		ls_DeploymentComponent = Cons(c4_xlarge_0,ls_DeploymentComponent);
 		speedPatchMap = put(speedPatchMap,c4_xlarge_0,0);
 		[DC: c4_xlarge_0] ImageInterface odefault___Image_0_c4_xlarge_0 = new Image(prometheus);
-		Rat coreRequired_odefault___Image_0_c4_xlarge_0 = 3155;
+		Rat coreRequired_odefault___Image_0_c4_xlarge_0 = 1100;
 		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___Image_0_c4_xlarge_0);
 		ls_ImageInterface = Cons(odefault___Image_0_c4_xlarge_0, ls_ImageInterface);
 		this!patchSpeed(speedPatchMap);

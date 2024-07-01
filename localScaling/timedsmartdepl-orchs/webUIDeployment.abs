@@ -152,7 +152,7 @@ class WebUIDeployment(CloudProvider cloudProvider, PrometheusInterface prometheu
 		ls_DeploymentComponent = Cons(c4_xlarge_0,ls_DeploymentComponent);
 		speedPatchMap = put(speedPatchMap,c4_xlarge_0,0);
 		[DC: c4_xlarge_0] WebUIInterface odefault___WebUI_0_c4_xlarge_0 = new WebUI(prometheus, persistence, auth, image, recommender);
-		Rat coreRequired_odefault___WebUI_0_c4_xlarge_0 = 2032;
+		Rat coreRequired_odefault___WebUI_0_c4_xlarge_0 = 1200;
 		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___WebUI_0_c4_xlarge_0);
 		ls_WebUIInterface = Cons(odefault___WebUI_0_c4_xlarge_0, ls_WebUIInterface);
 		this!patchSpeed(speedPatchMap);

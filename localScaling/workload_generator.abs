@@ -12,17 +12,17 @@ class WorkloadGenerator(PrometheusInterface prometheus, WebUILoadBalancerInterfa
 
     Rat time = 0;
     Int i = 0;
-    String allocated_instances = "";
 
     Unit run() {
         while(time <= simulation_duration()) {
             Rat completed_global = await prometheus!getV("completed global", "");
             Rat latency_global = await prometheus!getV("latency global", "");
-            allocated_instances = this.allocated_instances();
+            String allocated_instances = this.allocated_instances();
+            Rat loss = this.getLoss();
             if (latency_global == 0) completed_global = 1;
-            // println("[Time: " + toString(time) + " Request: " + toString(currentMessageNumber) + " Latency: " + toString(when completed_global > 0 then float(latency_global/completed_global) else -1.0) + " " + allocated_instances + "]");
             Rat currentMessageNumber = nth(actual_workload(), i);
             i = (i + 1) % length(actual_workload());
+            println("[Time: " + toString(time) + " Request: " + toString(currentMessageNumber) + " Latency: " + toString(when completed_global > 0 then float(latency_global/completed_global) else -1.0) + " loss: " + toString(loss) + " " + allocated_instances + "]");
             Int j = 0;
             while(j < currentMessageNumber) {
                 webUI!request();
@@ -31,7 +31,6 @@ class WorkloadGenerator(PrometheusInterface prometheus, WebUILoadBalancerInterfa
             }
             time = time + (sendingWin()/time_unit_to_sec());
         }
-        // println("[Time: " + toString(time) + " Request: " + toString(currentMessageNumber) + " Latency: " + toString(when completed_global > 0 then float(latency_global/completed_global) else -1.0) + " " + allocated_instances + "]");
     }
 
     String allocated_instances() {
@@ -41,5 +40,14 @@ class WorkloadGenerator(PrometheusInterface prometheus, WebUILoadBalancerInterfa
             instances = instances + " " + s + ":" + toString(i); 
         }
         return "{" + instances + "}";
+    }
+
+    Rat getLoss() {
+        Rat loss = 0;
+        foreach(s in services()) {
+            Rat r = await prometheus!getV("reqiest loss", s);
+            loss = loss + r;
+        }
+        return loss;
     }
 }

@@ -148,20 +148,20 @@ class PersistenceDeployment(CloudProvider cloudProvider, PrometheusInterface pro
 
 	Unit deploy_aux() {
 		Map<DeploymentComponent,Rat> speedPatchMap = map[];
-		DeploymentComponent c4_2xlarge_0 = cloudProvider.launchInstanceNamed("c4_2xlarge");
-		ls_DeploymentComponent = Cons(c4_2xlarge_0,ls_DeploymentComponent);
-		speedPatchMap = put(speedPatchMap,c4_2xlarge_0,0);
-		[DC: c4_2xlarge_0] PersistenceInterface odefault___Persistence_0_c4_2xlarge_0 = new Persistence(prometheus);
-		Rat coreRequired_odefault___Persistence_0_c4_2xlarge_0 = 4380;
-		speedPatchMap = put(speedPatchMap, c4_2xlarge_0, fromJust(lookup(speedPatchMap,c4_2xlarge_0)) + coreRequired_odefault___Persistence_0_c4_2xlarge_0);
-		ls_PersistenceInterface = Cons(odefault___Persistence_0_c4_2xlarge_0, ls_PersistenceInterface);
+		DeploymentComponent c4_xlarge_0 = cloudProvider.launchInstanceNamed("c4_xlarge");
+		ls_DeploymentComponent = Cons(c4_xlarge_0,ls_DeploymentComponent);
+		speedPatchMap = put(speedPatchMap,c4_xlarge_0,0);
+		[DC: c4_xlarge_0] PersistenceInterface odefault___Persistence_0_c4_xlarge_0 = new Persistence(prometheus);
+		Rat coreRequired_odefault___Persistence_0_c4_xlarge_0 = 900;
+		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___Persistence_0_c4_xlarge_0);
+		ls_PersistenceInterface = Cons(odefault___Persistence_0_c4_xlarge_0, ls_PersistenceInterface);
 		this!patchSpeed(speedPatchMap);
 		await duration(waiting_time,waiting_time);
-		balancer.connectInstance(odefault___Persistence_0_c4_2xlarge_0);
+		balancer.connectInstance(odefault___Persistence_0_c4_xlarge_0);
 	}
 
 	Unit undeploy_aux() {
-		PersistenceInterface odefault___Persistence_0_c4_2xlarge_0 = nth(ls_PersistenceInterface,0);
+		PersistenceInterface odefault___Persistence_0_c4_xlarge_0 = nth(ls_PersistenceInterface,0);
 		balancer.disconnectInstance();
 		while ( !isEmpty(ls_DeploymentComponent) ) {
 			cloudProvider.shutdownInstance(head(ls_DeploymentComponent));

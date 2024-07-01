@@ -148,20 +148,20 @@ class AuthDeployment(CloudProvider cloudProvider, PrometheusInterface prometheus
 
 	Unit deploy_aux() {
 		Map<DeploymentComponent,Rat> speedPatchMap = map[];
-		DeploymentComponent c4_2xlarge_0 = cloudProvider.launchInstanceNamed("c4_2xlarge");
-		ls_DeploymentComponent = Cons(c4_2xlarge_0,ls_DeploymentComponent);
-		speedPatchMap = put(speedPatchMap,c4_2xlarge_0,0);
-		[DC: c4_2xlarge_0] AuthInterface odefault___Auth_0_c4_2xlarge_0 = new Auth(prometheus, persistence);
-		Rat coreRequired_odefault___Auth_0_c4_2xlarge_0 = 5096;
-		speedPatchMap = put(speedPatchMap, c4_2xlarge_0, fromJust(lookup(speedPatchMap,c4_2xlarge_0)) + coreRequired_odefault___Auth_0_c4_2xlarge_0);
-		ls_AuthInterface = Cons(odefault___Auth_0_c4_2xlarge_0, ls_AuthInterface);
+		DeploymentComponent c4_xlarge_0 = cloudProvider.launchInstanceNamed("c4_xlarge");
+		ls_DeploymentComponent = Cons(c4_xlarge_0,ls_DeploymentComponent);
+		speedPatchMap = put(speedPatchMap,c4_xlarge_0,0);
+		[DC: c4_xlarge_0] AuthInterface odefault___Auth_0_c4_xlarge_0 = new Auth(prometheus, persistence);
+		Rat coreRequired_odefault___Auth_0_c4_xlarge_0 = 900;
+		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___Auth_0_c4_xlarge_0);
+		ls_AuthInterface = Cons(odefault___Auth_0_c4_xlarge_0, ls_AuthInterface);
 		this!patchSpeed(speedPatchMap);
 		await duration(waiting_time,waiting_time);
-		balancer.connectInstance(odefault___Auth_0_c4_2xlarge_0);
+		balancer.connectInstance(odefault___Auth_0_c4_xlarge_0);
 	}
 
 	Unit undeploy_aux() {
-		AuthInterface odefault___Auth_0_c4_2xlarge_0 = nth(ls_AuthInterface,0);
+		AuthInterface odefault___Auth_0_c4_xlarge_0 = nth(ls_AuthInterface,0);
 		balancer.disconnectInstance();
 		while ( !isEmpty(ls_DeploymentComponent) ) {
 			cloudProvider.shutdownInstance(head(ls_DeploymentComponent));

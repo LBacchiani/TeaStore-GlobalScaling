@@ -62,8 +62,8 @@ import * from WorkloadGenerator;
     ////MONITORS///
     MonitorInterface m1 = new Monitor(prometheus, "WebUI", webUIWrapper, 1);
     MonitorInterface m2 = new Monitor(prometheus, "Auth", authWrapper, 1);
-    MonitorInterface m3 = new Monitor(prometheus, "Image", persWrapper, 1);
-    MonitorInterface m4 = new Monitor(prometheus, "Persistence", imageWrapper, 1);
+    MonitorInterface m3 = new Monitor(prometheus, "Persistence", persWrapper, 1);
+    MonitorInterface m4 = new Monitor(prometheus, "Image", imageWrapper, 1);
     MonitorInterface m5 = new Monitor(prometheus, "Recommender", recommenderWrapper, 1);
 
     new WorkloadGenerator(prometheus, webUILB);

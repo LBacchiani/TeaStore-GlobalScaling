@@ -148,20 +148,20 @@ class RecommenderDeployment(CloudProvider cloudProvider, PrometheusInterface pro
 
 	Unit deploy_aux() {
 		Map<DeploymentComponent,Rat> speedPatchMap = map[];
-		DeploymentComponent c4_2xlarge_0 = cloudProvider.launchInstanceNamed("c4_2xlarge");
-		ls_DeploymentComponent = Cons(c4_2xlarge_0,ls_DeploymentComponent);
-		speedPatchMap = put(speedPatchMap,c4_2xlarge_0,0);
-		[DC: c4_2xlarge_0] RecommenderInterface odefault___Recommender_0_c4_2xlarge_0 = new Recommender(prometheus);
-		Rat coreRequired_odefault___Recommender_0_c4_2xlarge_0 = 6498;
-		speedPatchMap = put(speedPatchMap, c4_2xlarge_0, fromJust(lookup(speedPatchMap,c4_2xlarge_0)) + coreRequired_odefault___Recommender_0_c4_2xlarge_0);
-		ls_RecommenderInterface = Cons(odefault___Recommender_0_c4_2xlarge_0, ls_RecommenderInterface);
+		DeploymentComponent c4_xlarge_0 = cloudProvider.launchInstanceNamed("c4_xlarge");
+		ls_DeploymentComponent = Cons(c4_xlarge_0,ls_DeploymentComponent);
+		speedPatchMap = put(speedPatchMap,c4_xlarge_0,0);
+		[DC: c4_xlarge_0] RecommenderInterface odefault___Recommender_0_c4_xlarge_0 = new Recommender(prometheus);
+		Rat coreRequired_odefault___Recommender_0_c4_xlarge_0 = 800;
+		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___Recommender_0_c4_xlarge_0);
+		ls_RecommenderInterface = Cons(odefault___Recommender_0_c4_xlarge_0, ls_RecommenderInterface);
 		this!patchSpeed(speedPatchMap);
 		await duration(waiting_time,waiting_time);
-		balancer.connectInstance(odefault___Recommender_0_c4_2xlarge_0);
+		balancer.connectInstance(odefault___Recommender_0_c4_xlarge_0);
 	}
 
 	Unit undeploy_aux() {
-		RecommenderInterface odefault___Recommender_0_c4_2xlarge_0 = nth(ls_RecommenderInterface,0);
+		RecommenderInterface odefault___Recommender_0_c4_xlarge_0 = nth(ls_RecommenderInterface,0);
 		balancer.disconnectInstance();
 		while ( !isEmpty(ls_DeploymentComponent) ) {
 			cloudProvider.shutdownInstance(head(ls_DeploymentComponent));
