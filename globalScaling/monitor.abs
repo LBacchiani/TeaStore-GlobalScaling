@@ -1,0 +1,102 @@
+module Monitor;
+
+export *;
+import * from ABS.DC;
+import * from Architecture;
+import * from Wrapper;
+import * from Scaler;
+import * from Param;
+import * from Mixer;
+
+
+interface MonitorInterface {}
+
+class Monitor(ScalerServiceInterface scaler, MixerInterface mixer, PrometheusInterface prometheus, List<Int> init_conf) implements MonitorInterface {
+  Int time = 0;//truncate(monitoring_window() / time_unit_to_sec());
+  List<Int> last_pred_config = init_conf; //OUR MIXING TECHNIQUE
+  //Rat last_pred = fst_pred(); //LITERATURE MIXING TECHNIQUE
+
+  Pair<Rat,Rat> find_maxes() {
+    Rat max_pred = -1;
+    Rat max_true = -1;
+    Int i = 0;
+    while(i < ratio()) {
+      await duration(sendingWin());
+      Rat chunk_pred = -1;
+      if(proactiveness()) chunk_pred = nth(predicted_workload(), (i + time) % length(predicted_workload()));
+      Rat chunk_real = await prometheus!getV("request global", "");
+      max_pred = max(chunk_pred,max_pred);
+      max_true = max(chunk_real,max_true);
+      i = i + 1;
+    }
+    return Pair(max_pred, max_true);
+  }
+
+	Unit run() {
+    Rat mcl = scaler.getSystemMCL();
+    Rat nInst = this.nInst();
+    this.log(0, fst_pred(), mcl, 0, nInst);    
+    while(time <= simulation_duration()) {
+      Pair<Rat,Rat> maxes = this.find_maxes();
+      Rat max_pred = fst(maxes);
+      Rat max_true = snd(maxes);
+      Rat target_workload = max_true;
+      mcl = scaler.getSystemMCL();
+      nInst = this.nInst();
+      if(proactiveness()) target_workload = max_pred;
+      if(mixing()) {
+        List<Int> actual_conf = scaler.computeConfiguration(max_true);
+        ///OUR MIXING TECHNIQUE////
+        target_workload = mixer.mix(max_true, max_pred, last_pred_config, actual_conf);
+        last_pred_config = scaler.computeConfiguration(max_pred);
+        //////////////////////
+        
+        ///LITERATURE MIXING METHOD
+        /*target_workload = mixer.mix(last_pred, max_pred, max_true);
+        last_pred = max_pred;*/
+        ///////////
+      }
+      if(target_workload - (mcl - kbig()) > k() || (mcl - kbig()) - target_workload > k()) {
+        List<Int> target_config = scaler.computeConfiguration(target_workload);
+        scaler.scale(target_config);
+      }
+      time = time + truncate(monitoring_window() / time_unit_to_sec());
+      this.log(max_true, max_pred, mcl, target_workload, nInst); //debug purpose
+    }
+  }
+
+  Unit log(Rat max_true, Rat max_pred, Rat mcl, Rat target, Rat nInst) {
+      Rat completed_global = await prometheus!getV("completed global", "");
+      Rat latency_global = await prometheus!getV("latency global", "");
+      Float latency = when completed_global > 0 then float(latency_global/completed_global) else -1.0;
+      if (latency_global == 0) latency = 0.0;
+      Rat loss = this.getLoss();
+      String toPrint = toString(time) + "  " + toString(latency);
+      if(proactiveness()) toPrint = toPrint + " #next_max: " + toString(max_pred);
+      toPrint = toPrint + " curr_max: " + toString(max_true); 
+      if(mixing()) toPrint = toPrint + " target_scale: " + toString(float(target));
+      toPrint = toPrint + " COMP: " + toString(completed_global) + " REJ: " + toString(loss) + " SUPP: " + toString(float(mcl)) + " INST: " + toString(nInst);
+      String scalingAct = scaler.getScalingActions();
+      toPrint = toPrint + scalingAct;
+      println(toPrint);
+  }
+
+    Rat getLoss() {
+        Rat loss = 0;
+        foreach(s in services()) {
+            Rat r = await prometheus!getV("request loss", s);
+            loss = loss + r;
+        }
+        return loss;
+    }
+
+    Rat nInst() {
+        Rat instances = 0;
+        foreach(s in services()) {
+            Rat i = await prometheus!getV("instances", s);
+            instances = instances + i;
+        }
+        return instances;
+    }
+}
+

@@ -1,0 +1,85 @@
+module LocalMonitor;
+
+export *;
+import * from Architecture;
+import * from Param;
+import * from ScaleWrapper;
+
+interface LocalMonitorInterface {
+    Unit tick();
+    Unit check();
+    Unit printReqs();
+}
+
+class LocalMonitor(PrometheusInterface prometheus, String serviceName, WrapperInterface wrapper, Int baseN, List<Int> predictions) implements LocalMonitorInterface {
+    Rat monitored_inst = baseN;
+    Rat target = -1;
+    List<Rat> reqs = list[];
+    Int i = 0;
+    Rat time = monitoring_window()/time_unit_to_sec();
+
+    Unit printReqs() {println(serviceName + ": " + toString(reqs));}
+
+
+    Unit tick() {
+        if(isEmpty(predictions)) {
+            Rat curr = await prometheus!getV("total request", serviceName);
+            target = max(target, curr);
+            reqs = appendright(reqs,target);
+        } else {
+            target = nth(predictions,i);
+            if(i < length(predictions)) i = i + 1;
+        }
+    }
+
+    Unit check() {
+        Rat instances = await prometheus!getV("instances", serviceName);
+        Rat mcl = lookupUnsafe(serviceMCLs(), serviceName);
+        Rat mf = lookupUnsafe(serviceMFs(), serviceName);
+        Rat completed = await prometheus!getV("completed", serviceName);
+        Rat compl_throughput = time_unit_to_sec() * completed / monitoring_window();
+        Rat k = k() * mf;
+        Rat kbig =  kbig() * mf;
+        if(target - (mcl * instances - kbig)  > k || (mcl * instances - kbig) - target > k) {
+            Int target_inst = ceil(float(target/mcl));
+            if(target_inst > instances) this!scaleUp(target_inst - instances);
+            else if(target_inst < instances) this!scaleDown(instances - target_inst);    
+        }
+    }
+
+    // Unit run() {
+    //     while(time <= simulation_duration()) {
+    //         await duration(monitoring_window());
+    //         Rat latency = await prometheus!getV("latency", serviceName);
+    //         Rat total_req = await prometheus!getV("total request", serviceName);
+    //         Rat loss = await prometheus!getV("request loss", serviceName);
+    //         Rat completed = await prometheus!getV("completed", serviceName);
+    //         Rat instances = await prometheus!getV("instances", serviceName);
+    //         Rat avg_lat = 0;
+    //         Rat throughput = time_unit_to_sec() * total_req / monitoring_window();
+    //         Rat add_throughput = time_unit_to_sec() * (total_req - completed) / monitoring_window();
+    //         Rat compl_throughput = time_unit_to_sec() * completed / monitoring_window();
+    //         if(completed != 0) avg_lat = latency/completed;
+    //         Rat mcl = lookupUnsafe(serviceMCLs(), serviceName);
+    //         Int target = ceil(float(throughput/mcl));
+    //         println(serviceName + "[Time: " + toString(time) + " Latency: " + toString(float(avg_lat)) + " Instances: " + toString(instances) + " Request Throughput: " + toString(float(throughput)) +  " Response Throughput: " + toString(float(compl_throughput)) + "]");
+    //         if(target > instances) this!scaleUp(target - instances);
+    //         else if(target < instances) this!scaleDown(instances - target);    
+    //         time = time + (monitoring_window()/time_unit_to_sec());      
+    //     }
+    // }
+
+    Unit scaleUp(Rat toDeploy) {
+        while(toDeploy != 0) {
+            wrapper!deploy();
+            toDeploy = toDeploy - 1;
+        }
+    }
+
+    Unit scaleDown(Rat toDeploy) {
+        while(toDeploy != 0) {
+            wrapper!undeploy();
+            toDeploy = toDeploy - 1;
+        }
+    }
+}

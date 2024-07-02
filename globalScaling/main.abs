@@ -1,0 +1,96 @@
+module Main;
+
+export *;
+import * from Monitor;
+import * from Architecture;
+import * from ABS.DC;
+import * from Setup;
+import * from Scale;
+import * from Wrapper;
+import * from Param;
+import * from WorkloadGenerator;
+import * from Mixer;
+import * from Scaler;
+
+
+{
+
+    CloudProvider cp = new CloudProvider("CloudProvider");
+    PrometheusInterface prometheus = new Prometheus();
+
+    foreach(m in metrics()) {
+        foreach(s in services()) await prometheus!init(m, s);
+    }
+
+    ////SETUP///
+    Setup setup = new Setup(cp, prometheus);
+    await setup!deploy();
+    List<ImageLoadBalancerInterface> imageLBList = await setup!getImageLoadBalancerInterface();
+    ImageLoadBalancerInterface imageLB = head(imageLBList);
+
+    List<AuthLoadBalancerInterface> authLBList = await setup!getAuthLoadBalancerInterface();
+    AuthLoadBalancerInterface authLB = head(authLBList);
+
+    List<RecommenderLoadBalancerInterface> recommenderLBList = await setup!getRecommenderLoadBalancerInterface();
+    RecommenderLoadBalancerInterface recommenderLB = head(recommenderLBList);
+
+    List<PersistenceLoadBalancerInterface> persistenceLBList = await setup!getPersistenceLoadBalancerInterface();
+    PersistenceLoadBalancerInterface persistenceLB = head(persistenceLBList);
+
+    List<WebUILoadBalancerInterface> webUILBList = await setup!getWebUILoadBalancerInterface();
+    WebUILoadBalancerInterface webUILB = head(webUILBList);
+
+
+    ScalerServiceInterface scaler = new ScalerService();
+
+    ////WRAPPERS///
+    Scale s1 = new Scale(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
+    WrapperScaleInterface w1 = new WrapperScale(s1, null, null, 4);
+
+    List<Int> scale1Config = list[1, //webUI
+                              1, //persistence
+                              1, //auth
+                              0, //recommender
+                              1]; //image  
+
+    scaler.insertScalingElements(scale1Config, w1, "Scale1");        
+    
+    Scale s2 = new Scale(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
+    WrapperScaleInterface w2 = new WrapperScale(null, s2, null, 8);
+    List<Int> scale2Config = list[2, //webUI
+                              2, //persistence
+                              2, //auth
+                              0, //recommender
+                              2]; //image      
+    scaler.insertScalingElements(scale2Config, w2, "Scale2");   
+
+    Scale s3 = new Scale(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
+    WrapperScaleInterface w3 = new WrapperScale(null, null, s3, 12);
+    List<Int> scale3Config = list[3, //webUI
+                              3, //persistence
+                              3, //auth
+                              0, //recommender
+                              3]; //image      
+    scaler.insertScalingElements(scale3Config, w3, "Scale3");        
+   
+
+    MixerInterface mixer = new Mixer();
+
+
+    List<Int> fst_conf = list[];
+    if(proactiveness()) {
+        List<Int> config = scaler.computeConfiguration(fst_pred());
+        scaler.scale(config);
+        String scalingAct = scaler.getScalingActions();
+        println("Initial Configuration: Basex1 " + scalingAct);
+        await duration(200,200);
+        fst_conf = config;
+    }
+    
+    ////MONITOR///
+    new Monitor(scaler, mixer, prometheus, fst_conf);
+
+
+    new WorkloadGenerator(prometheus, webUILB);
+
+}

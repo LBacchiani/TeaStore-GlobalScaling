@@ -1,7 +1,7 @@
 module Main;
 
 export *;
-import * from Monitor;
+import * from LocalMonitor;
 import * from Architecture;
 import * from ABS.DC;
 import * from Setup;
@@ -13,6 +13,7 @@ import * from RecommenderDeployment;
 import * from ScaleWrapper;
 import * from Param;
 import * from WorkloadGenerator;
+import * from Monitor;
 
 
 {
@@ -60,11 +61,15 @@ import * from WorkloadGenerator;
     WrapperInterface recommenderWrapper = new Wrapper(null, null, null, null, recommenderD);
 
     ////MONITORS///
-    MonitorInterface m1 = new Monitor(prometheus, "WebUI", webUIWrapper, 1);
-    MonitorInterface m2 = new Monitor(prometheus, "Auth", authWrapper, 1);
-    MonitorInterface m3 = new Monitor(prometheus, "Persistence", persWrapper, 1);
-    MonitorInterface m4 = new Monitor(prometheus, "Image", imageWrapper, 1);
-    MonitorInterface m5 = new Monitor(prometheus, "Recommender", recommenderWrapper, 1);
+    LocalMonitorInterface m1 = new LocalMonitor(prometheus, "WebUI", webUIWrapper, 1, list[]);
+    LocalMonitorInterface m2 = new LocalMonitor(prometheus, "Auth", authWrapper, 1, list[]);
+    LocalMonitorInterface m3 = new LocalMonitor(prometheus, "Persistence", persWrapper, 1, list[]);
+    LocalMonitorInterface m4 = new LocalMonitor(prometheus, "Image", imageWrapper, 1, list[]);
+    LocalMonitorInterface m5 = new LocalMonitor(prometheus, "Recommender", recommenderWrapper, 1, list[]);
+
+    List<LocalMonitorInterface> monitors = list[m1,m2,m3,m4,m5];
+
+    new Monitor(prometheus, monitors, 0);
 
     new WorkloadGenerator(prometheus, webUILB);
 

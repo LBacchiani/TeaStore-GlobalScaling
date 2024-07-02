@@ -1,49 +1,79 @@
 module Monitor;
 
 export *;
-import * from Architecture;
+
 import * from Param;
-import * from ScaleWrapper;
+import * from LocalMonitor;
+import * from Architecture;
 
-interface MonitorInterface {}
+interface MonitorInterface{}
 
-class Monitor(PrometheusInterface prometheus, String serviceName, WrapperInterface wrapper, Int baseN) implements MonitorInterface {
-    Rat time = monitoring_window()/time_unit_to_sec();
-    Rat monitored_inst = baseN;
+class Monitor(PrometheusInterface prometheus, List<LocalMonitorInterface> monitors, Rat initialCost) implements MonitorInterface {
+    Rat time = 0;//monitoring_window()/time_unit_to_sec();
+
+    Unit tick() {foreach(m in monitors) m.tick();}
+
+    Unit check() {foreach(m in monitors) m.check();}
+
+    Unit printReqs() {foreach(m in monitors) {m.printReqs();}}
+
+
+
+    Rat find_max() {
+        Rat max_true = -1;
+        Int i = 0;
+        while(i < ratio()) {
+            await duration(sendingWin());
+            Rat chunk_real = await prometheus!getV("request global", "");
+            max_true = max(max_true, chunk_real);
+            this.tick();
+            i = i + 1;
+        }
+        return max_true;
+    }
 
     Unit run() {
+        println("0  0.0 curr_max: 0 COMP: 0 REJ: 0 COST: 0.0 INST: 5");
         while(time <= simulation_duration()) {
-            await duration(monitoring_window());
-            Rat latency = await prometheus!getV("latency", serviceName);
-            Rat total_req = await prometheus!getV("total request", serviceName);
-            Rat loss = await prometheus!getV("request loss", serviceName);
-            Rat completed = await prometheus!getV("completed", serviceName);
-            Rat instances = await prometheus!getV("instances", serviceName);
-            Rat avg_lat = 0;
-            Rat throughput = time_unit_to_sec() * total_req / monitoring_window();
-            Rat add_throughput = time_unit_to_sec() * (total_req - completed) / monitoring_window();
-            Rat compl_throughput = time_unit_to_sec() * completed / monitoring_window();
-            if(completed != 0) avg_lat = latency/completed;
-            Rat mcl = lookupUnsafe(serviceMCLs(), serviceName);
-            Int target = ceil(float(throughput/mcl));
-            // println(serviceName + "[Time: " + toString(time) + " Latency: " + toString(float(avg_lat)) + " Instances: " + toString(instances) + " Request Throughput: " + toString(float(throughput)) +  " Response Throughput: " + toString(float(compl_throughput)) + "]");
-            if(target > instances) this!scaleUp(target - instances);
-            else if(target < instances) this!scaleDown(instances - target);    
-            time = time + (monitoring_window()/time_unit_to_sec());      
+            Rat max_true = this.find_max();
+            Rat completed_global = await prometheus!getV("completed global", "");
+            Rat latency_global = await prometheus!getV("latency global", "");
+            Float latency = when completed_global > 0 then float(latency_global/completed_global) else -1.0;
+            Rat loss = this.getLoss();
+            String instances = this.allocated_instances();
+            Rat n_inst = this.nInst();
+            this.check();
+            time = time + (monitoring_window()/time_unit_to_sec());  
+            println(toString(time) + "  " + toString(latency) + " #curr_max: " + toString(max_true) + " COMP: " + toString(completed_global) + " REJ: " + toString(loss) + " INST: " + toString(n_inst) + " " + instances);
         }
+        if(!oracleScaling()) this.printReqs();
     }
 
-    Unit scaleUp(Rat toDeploy) {
-        while(toDeploy != 0) {
-            wrapper!deploy();
-            toDeploy = toDeploy - 1;
+    Rat getLoss() {
+        Rat loss = 0;
+        foreach(s in services()) {
+            Rat r = await prometheus!getV("request loss", s);
+            loss = loss + r;
         }
+        return loss;
     }
 
-    Unit scaleDown(Rat toDeploy) {
-        while(toDeploy != 0) {
-            wrapper!undeploy();
-            toDeploy = toDeploy - 1;
+    String allocated_instances() {
+        String instances = "";
+        foreach(s in services()) {
+            Rat i = await prometheus!getV("instances", s);
+            instances = instances + " " + s + ":" + toString(i); 
         }
+        return "{" + instances + "}";
     }
+
+    Rat nInst() {
+        Rat instances = 0;
+        foreach(s in services()) {
+            Rat i = await prometheus!getV("instances", s);
+            instances = instances + i;
+        }
+        return instances;
+    }
+
 }

@@ -1,0 +1,184 @@
+module Scaler;
+
+export *;
+import * from ABS.DC;
+import * from Wrapper;
+import * from Param;
+
+
+interface ScalerServiceInterface {
+  Unit insertScalingElements(List<Int> components, WrapperScaleInterface scalingObj, String scalingName);
+  Unit scale(List<Int> configDeltas);
+  Rat getSystemMCL();
+  String getScalingActions();
+  List<Int> computeConfiguration(Rat target_workload);
+}
+
+class ScalerService() implements ScalerServiceInterface {
+
+  List<Rat> mcls = list[webUIMCL(), persistenceMCL(), authMCL(), recommenderMCL(), imageMCL()];
+  List<Rat> mfs = list[1, 32/10, 1, 1/4, 117/100];
+  List<Int> baseConfig = list[1, //webUI
+                              1, //persistence
+                              1, //auth
+                              1,  //recommender
+                              1]; //image
+  List<List<Int>> scaleComponents = list[];
+  List<Int> deployedDeltas = list[];
+  List<WrapperScaleInterface> orchestrationDeltas = list[];
+  List<String> scaleNames = list[];
+  List<Int> scalingTrace = list[];
+  List<Int> printableconfig = list[];
+  Rat mcl = 0;
+  Int numScales = 0;
+  String scalingAct = "";
+
+  Unit insertScalingElements(List<Int> components, WrapperScaleInterface scalingObj, String scalingName) {
+    scaleComponents = appendright(scaleComponents, components);
+    deployedDeltas = appendright(deployedDeltas, 0);
+    orchestrationDeltas = appendright(orchestrationDeltas, scalingObj);
+    scalingTrace = appendright(scalingTrace, 0);
+    scaleNames = appendright(scaleNames, scalingName);
+    numScales = numScales + 1;
+  }
+
+  List<Int> computeConfiguration(Rat target_workload) {
+    List<Int> configDeltas = this.createEmpty(numScales);
+    printableconfig = configDeltas;
+    List<Int> config = baseConfig;
+    mcl = this.mcl(config);
+    Bool configFound = (mcl - kbig()) - target_workload  >= 0;
+    while(!configFound) {
+      List<Int> candidateConfig = baseConfig;
+      Int i = -1;
+      while(i < numScales - 1 && !configFound) {
+        i = i + 1;
+        candidateConfig = this.vSum(config, nth(scaleComponents,i));
+        mcl = this.mcl(candidateConfig);
+        configFound = (mcl - kbig()) - target_workload  >= 0;
+      }
+      config = candidateConfig;
+      printableconfig = this.incrementValue(i,printableconfig);
+      configDeltas = this.addDeltas(i,configDeltas);
+    }
+    return configDeltas;
+  }
+
+
+  Unit scale(List<Int> configDeltas) {
+    Int i = 0;
+    while(i < numScales) {
+      Int diff = nth(configDeltas,i) - nth(deployedDeltas,i);
+      Rat num = abs(diff);
+      while(num > 0) {
+         if (diff > 0) {nth(orchestrationDeltas,i)!deploy();}
+         else {nth(orchestrationDeltas,i)!undeploy();}
+         num = num - 1;
+      }
+      i = i + 1;
+    }
+    deployedDeltas = configDeltas;
+    scalingAct = this.recordAction(scalingTrace, printableconfig);
+    scalingTrace = printableconfig;
+  }
+
+  Rat getSystemMCL() {
+    if(mcl == 0) mcl = this.mcl(baseConfig);
+    return mcl;
+  }
+
+  String getScalingActions() {
+    String tmp = scalingAct;
+    if(scalingAct != "") scalingAct = "";
+    return tmp;
+  }
+
+
+  ////private methods/////
+
+  Rat computeCostPerScaling(WrapperScaleInterface wrapper) {
+    List<DeploymentComponent> dcs = wrapper.getDeploymentComponent();
+    Rat cost = 0;
+    foreach(dc in dcs) {
+      Rat singleCost = dc.getCostPerInterval();
+      cost = cost + singleCost;
+    }
+    return cost;
+  }
+
+  Rat mcl(List<Int> microserviceInstances) {
+    Rat mcl = 0;
+    Int i = 0;
+    while(i < length(microserviceInstances)) {
+      Rat n_inst = nth(microserviceInstances,i);
+      Rat handled_frequency = n_inst * nth(mcls,i) / nth(mfs,i);
+      if(handled_frequency < mcl || mcl == 0){mcl = handled_frequency;}
+      i = i + 1;
+    }
+    return mcl;
+  }
+
+  List<Int> vSum(List<Int> v1, List<Int> v2) {
+    List<Int> res = list[];
+    while(!isEmpty(v1) && !isEmpty(v2)) {
+      res = appendright(res, head(v1) + head(v2));
+      v1 = tail(v1);
+      v2 = tail(v2);
+    }
+    return res;
+  }
+
+  List<Int> createEmpty(Int nDeltas) {
+    List<Int> empty = list[];
+    while(nDeltas > 0) {empty = appendright(empty, 0); nDeltas = nDeltas - 1;}
+    return empty;
+  }
+
+  List<Int> incrementValue(Int index, List<Int> list) {
+    List<Int> updatedList = list[];
+    Int i = 0;
+    while(i < length(list)) {
+      if(i == index){updatedList = appendright(updatedList, nth(list, i) + 1);}
+      else{updatedList = appendright(updatedList, nth(list, i));}
+      i = i + 1;
+    }
+    return updatedList;
+  }
+
+  List<Int> addDeltas(Int scaleIndex, List<Int> currentPoliciesConfig) {
+    List<Int> configDeltas = this.incrementValue(scaleIndex, currentPoliciesConfig);
+    Int i = 0;
+    while(i < scaleIndex) {
+      configDeltas = this.incrementValue(i, configDeltas);
+      i = i + 1;
+    }
+    return configDeltas;
+  }
+
+  String recordAction(List<Int> scalingTrace, List<Int> printableconfig) {
+    String toPrint = "";
+    Int i = 0;
+    while(i < numScales) {
+      Int diff = nth(printableconfig,i) - nth(scalingTrace,i);
+      String name = nth(scaleNames, i);
+      if (diff > 0) {toPrint = toPrint + " " + name + "-upx" + toString(diff);}
+      else if (diff < 0) {toPrint = toPrint + " " + name + "-downx" + toString(-diff);}
+      i = i + 1;
+    }
+    return toPrint;
+  }
+
+  /*Unit reconfigure(List<Int> deployedDeltas, List<Int> configDeltas) {
+    Int i = 0;
+    while(i < numScales) {
+      Int diff = nth(configDeltas,i) - nth(deployedDeltas,i);
+      Rat num = abs(diff);
+      while(num > 0) {
+         if (diff > 0) {nth(orchestrationDeltas,i)!deploy();}
+         else {nth(orchestrationDeltas,i)!undeploy();}
+         num = num - 1;
+      }
+      i = i + 1;
+    }
+  }*/
+}

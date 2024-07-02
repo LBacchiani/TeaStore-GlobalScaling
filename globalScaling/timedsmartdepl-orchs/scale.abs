@@ -1,10 +1,9 @@
-module ImageDeployment;
+module Scale;
 export *;
 import * from ABS.DC;
 import * from Architecture;
-import * from Param;
 
-interface ImageDeployment{
+interface Scale{
 	List<ImageLoadBalancerInterface> getImageLoadBalancerInterface();
 	List<WebUILoadBalancerInterface> getWebUILoadBalancerInterface();
 	List<AuthLoadBalancerInterface> getAuthLoadBalancerInterface();
@@ -20,7 +19,7 @@ interface ImageDeployment{
 	Unit undeploy();
 }
 
-class ImageDeployment(CloudProvider cloudProvider, PrometheusInterface prometheus, ImageLoadBalancerInterface balancer) implements ImageDeployment{
+class Scale(CloudProvider cloudProvider, AuthLoadBalancerInterface authLB, WebUILoadBalancerInterface webUILB, PersistenceLoadBalancerInterface persistenceLB, ImageLoadBalancerInterface imageLB, PrometheusInterface prometheus, RecommenderLoadBalancerInterface recommenderLB) implements Scale{
 
 	List<List<ImageLoadBalancerInterface>> ls_ls_ImageLoadBalancerInterface = Nil;
 	List<ImageLoadBalancerInterface> ls_ImageLoadBalancerInterface = Nil;
@@ -152,18 +151,42 @@ class ImageDeployment(CloudProvider cloudProvider, PrometheusInterface prometheu
 		DeploymentComponent c4_xlarge_0 = cloudProvider.launchInstanceNamed("c4_xlarge");
 		ls_DeploymentComponent = Cons(c4_xlarge_0,ls_DeploymentComponent);
 		speedPatchMap = put(speedPatchMap,c4_xlarge_0,0);
-		[DC: c4_xlarge_0] ImageInterface odefault___Image_0_c4_xlarge_0 = new Image(prometheus);
-		Rat coreRequired_odefault___Image_0_c4_xlarge_0 = 1100;
-		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___Image_0_c4_xlarge_0);
-		ls_ImageInterface = Cons(odefault___Image_0_c4_xlarge_0, ls_ImageInterface);
+		DeploymentComponent c4_2xlarge_0 = cloudProvider.launchInstanceNamed("c4_2xlarge");
+		ls_DeploymentComponent = Cons(c4_2xlarge_0,ls_DeploymentComponent);
+		speedPatchMap = put(speedPatchMap,c4_2xlarge_0,0);
+		[DC: c4_2xlarge_0] PersistenceInterface odefault___Persistence_0_c4_2xlarge_0 = new Persistence(prometheus);
+		Rat coreRequired_odefault___Persistence_0_c4_2xlarge_0 = 900;
+		speedPatchMap = put(speedPatchMap, c4_2xlarge_0, fromJust(lookup(speedPatchMap,c4_2xlarge_0)) + coreRequired_odefault___Persistence_0_c4_2xlarge_0);
+		ls_PersistenceInterface = Cons(odefault___Persistence_0_c4_2xlarge_0, ls_PersistenceInterface);
+		[DC: c4_2xlarge_0] ImageInterface odefault___Image_0_c4_2xlarge_0 = new Image(prometheus);
+		Rat coreRequired_odefault___Image_0_c4_2xlarge_0 = 1100;
+		speedPatchMap = put(speedPatchMap, c4_2xlarge_0, fromJust(lookup(speedPatchMap,c4_2xlarge_0)) + coreRequired_odefault___Image_0_c4_2xlarge_0);
+		ls_ImageInterface = Cons(odefault___Image_0_c4_2xlarge_0, ls_ImageInterface);
+		[DC: c4_xlarge_0] AuthInterface odefault___Auth_0_c4_xlarge_0 = new Auth(prometheus, persistenceLB);
+		Rat coreRequired_odefault___Auth_0_c4_xlarge_0 = 900;
+		speedPatchMap = put(speedPatchMap, c4_xlarge_0, fromJust(lookup(speedPatchMap,c4_xlarge_0)) + coreRequired_odefault___Auth_0_c4_xlarge_0);
+		ls_AuthInterface = Cons(odefault___Auth_0_c4_xlarge_0, ls_AuthInterface);
+		[DC: c4_2xlarge_0] WebUIInterface odefault___WebUI_0_c4_2xlarge_0 = new WebUI(prometheus, persistenceLB, authLB, imageLB, recommenderLB);
+		Rat coreRequired_odefault___WebUI_0_c4_2xlarge_0 = 1200;
+		speedPatchMap = put(speedPatchMap, c4_2xlarge_0, fromJust(lookup(speedPatchMap,c4_2xlarge_0)) + coreRequired_odefault___WebUI_0_c4_2xlarge_0);
+		ls_WebUIInterface = Cons(odefault___WebUI_0_c4_2xlarge_0, ls_WebUIInterface);
 		this!patchSpeed(speedPatchMap);
 		await duration(waiting_time,waiting_time);
-		balancer.connectInstance(odefault___Image_0_c4_xlarge_0);
+		persistenceLB.connectInstance(odefault___Persistence_0_c4_2xlarge_0);
+		imageLB.connectInstance(odefault___Image_0_c4_2xlarge_0);
+		authLB.connectInstance(odefault___Auth_0_c4_xlarge_0);
+		webUILB.connectInstance(odefault___WebUI_0_c4_2xlarge_0);
 	}
 
 	Unit undeploy_aux() {
-		ImageInterface odefault___Image_0_c4_xlarge_0 = nth(ls_ImageInterface,0);
-		balancer.disconnectInstance();
+		PersistenceInterface odefault___Persistence_0_c4_2xlarge_0 = nth(ls_PersistenceInterface,0);
+		ImageInterface odefault___Image_0_c4_2xlarge_0 = nth(ls_ImageInterface,0);
+		AuthInterface odefault___Auth_0_c4_xlarge_0 = nth(ls_AuthInterface,0);
+		WebUIInterface odefault___WebUI_0_c4_2xlarge_0 = nth(ls_WebUIInterface,0);
+		persistenceLB.disconnectInstance();
+		imageLB.disconnectInstance();
+		authLB.disconnectInstance();
+		webUILB.disconnectInstance();
 		while ( !isEmpty(ls_DeploymentComponent) ) {
 			cloudProvider.shutdownInstance(head(ls_DeploymentComponent));
 			ls_DeploymentComponent = tail(ls_DeploymentComponent);
