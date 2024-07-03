@@ -25,14 +25,15 @@ class LocalMonitor(PrometheusInterface prometheus, String serviceName, WrapperIn
         if(isEmpty(predictions)) {
             Rat curr = await prometheus!getV("total request", serviceName);
             target = max(target, curr);
-            reqs = appendright(reqs,target);
-        } else {
-            target = nth(predictions,i);
-            if(i < length(predictions)) i = i + 1;
-        }
+        } 
     }
 
     Unit check() {
+        if(isEmpty(predictions)) reqs = appendright(reqs,target);
+        else {
+            target = nth(predictions,i);
+            if(i < length(predictions)) i = i + 1;
+        }
         Rat instances = await prometheus!getV("instances", serviceName);
         Rat mcl = lookupUnsafe(serviceMCLs(), serviceName);
         Rat mf = lookupUnsafe(serviceMFs(), serviceName);
@@ -45,6 +46,7 @@ class LocalMonitor(PrometheusInterface prometheus, String serviceName, WrapperIn
             if(target_inst > instances) this!scaleUp(target_inst - instances);
             else if(target_inst < instances) this!scaleDown(instances - target_inst);    
         }
+        target = -1;
     }
 
     // Unit run() {

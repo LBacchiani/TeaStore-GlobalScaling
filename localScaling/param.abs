@@ -3,7 +3,7 @@
  export *;
 
 def Rat time_unit_to_sec() = 30; //1 TU = 1/30 s => 30 TU = 1s
-def Rat buffer_size() = 100;
+def Rat buffer_size() = 200;
 def Rat speed_per_core() = 5;
 def Rat monitoring_window() = 10 * time_unit_to_sec(); 
 def Rat sendingWin() = 1 * time_unit_to_sec();
@@ -13,10 +13,10 @@ def Map<String,Rat> serviceMCLs() = map[Pair("WebUI", webUIMCL()), Pair("Auth", 
 def Map<String,Rat> serviceMFs() = map[Pair("WebUI", 1), Pair("Auth", 1), Pair("Image", 117/100),
                                         Pair("Recommender", 1/4), Pair("Persistence", 32/10)];
 def List<String> metrics() = list["latency", "total request", "request loss", "waiting", "completed", "instances"];
-def Rat simulation_duration() = 200 * time_unit_to_sec();
+def Rat simulation_duration() = 210;
 def Int kbig() = 10;
 def Int k() = 8;
-def Bool oracleScaling() = False;
+def Bool oracleScaling() = True;
 def Int ratio() = truncate(monitoring_window() / sendingWin());
 
 //MCLS
@@ -81,3 +81,9 @@ def List<Int> actual_workload() = list[10, 5, 2, 2, 25, 22, 17, 20, 22, 27,
 //                                   150, 137, 127, 65, 62, 55, 52, 50, 50, 50,
 //                                   45, 132, 130, 47, 92, 95, 150, 157, 255, 400,
 //                                   430, 440, 440, 445, 455, 475, 457, 447, 447, 420];
+
+def List<Int> webUIPred() = list[120, 535, 675, 636, 710, 761, 745, 690, 552, 505, 405, 320, 312, 322, 260, 232, 150, 400, 476, 27];
+def List<Int> authPred() = list[120, 165, 737, 713, 662, 1029, 745, 690, 552, 505, 405, 320, 312, 322, 260, 232, 150, 157, 577, 27];
+def List<Int> persPred() = list[387, 540, 1728, 2157, 2178, 2702, 2566, 2241, 1785, 1649, 1327, 1040, 1019, 1049, 843, 751, 481, 508, 1303, 91];
+def List<Int> imagePred() = list[140, 185, 861, 948, 788, 898, 1489, 814, 660, 588, 462, 375, 366, 370, 315, 267, 177, 175, 743, 29];
+def List<Int> recommPred() = list[29, 33, 184, 215, 168, 221, 306, 171, 139, 124, 99, 81, 88, 85, 68, 63, 35, 48, 169, 10];
