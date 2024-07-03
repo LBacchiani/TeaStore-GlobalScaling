@@ -24,7 +24,7 @@ RUN git clone https://github.com/LBacchiani/TeaStore-GlobalScaling.git && \
     chmod +x localScaling/compile.sh
 
 # Set working directory
-WORKDIR /global-scaling/abs-simulations
+WORKDIR /TeaStore-GlobalScaling
 
 # Start a long-running process to keep the container alive
 CMD ["tail", "-f", "/dev/null"]
