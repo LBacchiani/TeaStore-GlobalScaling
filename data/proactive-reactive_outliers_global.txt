@@ -1,0 +1,21 @@
+0  0.0 #next_max: 32 curr_max: 0 target_scale: 0.0 COMP: 0 REJ: 0 SUPP: 135.625 INST: 5
+10  180.58990250034 #next_max: 92 curr_max: 709 target_scale: 709.0 COMP: 172 REJ: 4040 SUPP: 135.625 INST: 5 Scale2-upx1 Scale3-upx1
+20  66.70969732170215 #next_max: 522 curr_max: 761 target_scale: 761.0 COMP: 8587 REJ: 4105 SUPP: 813.75 INST: 25
+30  0.0007587630047224973 #next_max: 632 curr_max: 745 target_scale: 707.3333333333334 COMP: 7294 REJ: 0 SUPP: 813.75 INST: 25
+40  0.00017763653783502026 #next_max: 617 curr_max: 690 target_scale: 641.3333333333334 COMP: 5979 REJ: 0 SUPP: 813.75 INST: 25 Scale1-upx1 Scale2-downx1
+50  0.00011561708197375386 #next_max: 665 curr_max: 635 target_scale: 662.5 COMP: 5908 REJ: 0 SUPP: 678.125 INST: 21
+60  0.0 #next_max: 737 curr_max: 27 target_scale: 382.0 COMP: 152 REJ: 0 SUPP: 678.125 INST: 21 Scale1-downx1 Scale2-upx1 Scale3-downx1
+70  0.0 #next_max: 730 curr_max: 120 target_scale: 170.83333333333334 COMP: 417 REJ: 0 SUPP: 406.875 INST: 13 Scale1-upx1 Scale2-downx1
+80  10.046319495610144 #next_max: 670 curr_max: 535 target_scale: 602.5 COMP: 910 REJ: 170 SUPP: 271.25 INST: 9 Scale3-upx1
+90  20.33735257699887 #next_max: 525 curr_max: 675 target_scale: 537.5 COMP: 6642 REJ: 645 SUPP: 678.125 INST: 21
+100  0.00006829612068623619 #next_max: 500 curr_max: 552 target_scale: 508.6666666666667 COMP: 5178 REJ: 0 SUPP: 678.125 INST: 21 Scale1-downx1
+110  0.0002521526307195517 #next_max: 430 curr_max: 505 target_scale: 436.25 COMP: 4396 REJ: 0 SUPP: 542.5 INST: 17
+120  0.00007366622523930884 #next_max: 317 curr_max: 405 target_scale: 317.0 COMP: 3549 REJ: 0 SUPP: 542.5 INST: 17 Scale2-upx1 Scale3-downx1
+130  0.0 #next_max: 330 curr_max: 320 target_scale: 330.0 COMP: 3011 REJ: 0 SUPP: 406.875 INST: 13
+140  0.00006447413231150201 #next_max: 327 curr_max: 312 target_scale: 327.0 COMP: 3007 REJ: 0 SUPP: 406.875 INST: 13
+150  0.000037119111516946734 #next_max: 262 curr_max: 322 target_scale: 262.0 COMP: 3027 REJ: 0 SUPP: 406.875 INST: 13
+160  0.0 #next_max: 232 curr_max: 260 target_scale: 236.66666666666666 COMP: 2436 REJ: 0 SUPP: 406.875 INST: 13 Scale1-upx1 Scale2-downx1
+170  0.0 #next_max: 187 curr_max: 232 target_scale: 190.75 COMP: 1954 REJ: 0 SUPP: 271.25 INST: 9
+180  0.0 #next_max: 395 curr_max: 150 target_scale: 395.0 COMP: 798 REJ: 0 SUPP: 271.25 INST: 9 Scale1-downx1 Scale2-upx1
+190  0.00009490822277014598 #next_max: 480 curr_max: 400 target_scale: 480.0 COMP: 1503 REJ: 0 SUPP: 406.875 INST: 13 Scale2-downx1 Scale3-upx1
+200  0.00012003674168093191 #next_max: 32 curr_max: 475 target_scale: 32.0 COMP: 4456 REJ: 0 SUPP: 542.5 INST: 17 Scale3-downx1
