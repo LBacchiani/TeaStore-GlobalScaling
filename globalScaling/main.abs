@@ -5,7 +5,8 @@ import * from Monitor;
 import * from Architecture;
 import * from ABS.DC;
 import * from Setup;
-import * from Scale;
+import * from Scale1;
+import * from Scale2;
 import * from Wrapper;
 import * from Param;
 import * from WorkloadGenerator;
@@ -44,36 +45,27 @@ import * from Scaler;
     ScalerServiceInterface scaler = new ScalerService();
 
     ////WRAPPERS///
-    Scale s1 = new Scale(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
-    WrapperScaleInterface w1 = new WrapperScale(s1, null, null, 4);
+    Scale1 s1 = new Scale1(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
+    WrapperScaleInterface w1 = new WrapperScale(s1, null, 6);
 
-    List<Int> scale1Config = list[1, //webUI
+    List<Int> scale1Config = list[2, //webUI
                               1, //persistence
                               1, //auth
                               0, //recommender
-                              1]; //image  
+                              2]; //image  
 
     scaler.insertScalingElements(scale1Config, w1, "Scale1");        
     
-    Scale s2 = new Scale(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
-    WrapperScaleInterface w2 = new WrapperScale(null, s2, null, 8);
-    List<Int> scale2Config = list[2, //webUI
+    Scale2 s2 = new Scale2(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
+    WrapperScaleInterface w2 = new WrapperScale(null, s2, 8);
+    List<Int> scale2Config = list[3, //webUI
                               2, //persistence
                               2, //auth
                               0, //recommender
-                              2]; //image      
+                              3]; //image      
     scaler.insertScalingElements(scale2Config, w2, "Scale2");   
 
-    Scale s3 = new Scale(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
-    WrapperScaleInterface w3 = new WrapperScale(null, null, s3, 12);
-    List<Int> scale3Config = list[3, //webUI
-                              3, //persistence
-                              3, //auth
-                              0, //recommender
-                              3]; //image      
-    scaler.insertScalingElements(scale3Config, w3, "Scale3");        
-   
-
+         
     MixerInterface mixer = new Mixer();
 
 

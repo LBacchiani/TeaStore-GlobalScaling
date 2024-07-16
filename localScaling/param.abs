@@ -20,11 +20,11 @@ def Bool oracleScaling() = True;
 def Int ratio() = truncate(monitoring_window() / sendingWin());
 
 //MCLS
-def Rat webUIMCL() = 169;
-def Rat persistenceMCL() = 434;
-def Rat authMCL() = 173;
-def Rat imageMCL() = 173;
-def Rat recommenderMCL() = 217;
+def Rat webUIMCL() = 150;
+def Rat persistenceMCL() = 724;
+def Rat authMCL() = 190;
+def Rat imageMCL() = 117;
+def Rat recommenderMCL() = 215;
 
 //required resources
 def Rat webUICores() = 1200; //mCores
