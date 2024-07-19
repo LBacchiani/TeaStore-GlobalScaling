@@ -22,7 +22,7 @@ class ScalerService() implements ScalerServiceInterface {
                               1, //persistence
                               1, //auth
                               1,  //recommender
-                              1]; //image
+                              2]; //image
   List<List<Int>> scaleComponents = list[];
   List<Int> deployedDeltas = list[];
   List<WrapperScaleInterface> orchestrationDeltas = list[];

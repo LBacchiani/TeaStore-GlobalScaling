@@ -1,0 +1,21 @@
+0  0.0 curr_max: 0 COMP: 0 REJ: 0 COST: 0.0 INST: 5
+10  0.0 #curr_max: 27 COMP: 152 REJ: 0 INST: 6 { WebUI:1 Auth:1 Persistence:1 Recommender:1 Image:2}
+20  0.001398880895283773 #curr_max: 120 COMP: 417 REJ: 0 INST: 6 { WebUI:1 Auth:1 Persistence:1 Recommender:1 Image:2}
+30  10.353520924647597 #curr_max: 535 COMP: 604 REJ: 196 INST: 6 { WebUI:1 Auth:1 Persistence:1 Recommender:1 Image:2}
+40  68.76325806359165 #curr_max: 676 COMP: 2726 REJ: 6916 INST: 10 { WebUI:4 Auth:1 Persistence:2 Recommender:1 Image:2}
+50  146.75843655162467 #curr_max: 635 COMP: 7075 REJ: 6443 INST: 16 { WebUI:5 Auth:3 Persistence:3 Recommender:1 Image:4}
+60  16.309471802799415 #curr_max: 710 COMP: 6657 REJ: 379 INST: 23 { WebUI:5 Auth:5 Persistence:3 Recommender:1 Image:9}
+70  2.3816838216282457 #curr_max: 759 COMP: 7441 REJ: 0 INST: 23 { WebUI:5 Auth:4 Persistence:4 Recommender:1 Image:9}
+80  0.015378142319816558 #curr_max: 745 COMP: 7459 REJ: 0 INST: 27 { WebUI:7 Auth:5 Persistence:4 Recommender:1 Image:10}
+90  0.0030238954431657857 #curr_max: 690 COMP: 5979 REJ: 0 INST: 22 { WebUI:5 Auth:4 Persistence:4 Recommender:1 Image:8}
+100  0.0006883047565130082 #curr_max: 552 COMP: 5178 REJ: 0 INST: 21 { WebUI:5 Auth:4 Persistence:4 Recommender:1 Image:7}
+110  0.0018453288807052553 #curr_max: 505 COMP: 4396 REJ: 0 INST: 17 { WebUI:4 Auth:3 Persistence:3 Recommender:1 Image:6}
+120  0.00005213003315470109 #curr_max: 405 COMP: 3549 REJ: 0 INST: 17 { WebUI:4 Auth:3 Persistence:3 Recommender:1 Image:6}
+130  0.001858542642283945 #curr_max: 320 COMP: 3011 REJ: 0 INST: 13 { WebUI:3 Auth:3 Persistence:2 Recommender:1 Image:4}
+140  0.0017441001767434206 #curr_max: 312 COMP: 3007 REJ: 0 INST: 12 { WebUI:3 Auth:2 Persistence:2 Recommender:1 Image:4}
+150  0.002031962896827592 #curr_max: 322 COMP: 3027 REJ: 0 INST: 12 { WebUI:3 Auth:2 Persistence:2 Recommender:1 Image:4}
+160  0.0 #curr_max: 260 COMP: 2436 REJ: 0 INST: 12 { WebUI:3 Auth:2 Persistence:2 Recommender:1 Image:4}
+170  0.0007887824879123716 #curr_max: 232 COMP: 1954 REJ: 0 INST: 10 { WebUI:2 Auth:2 Persistence:2 Recommender:1 Image:3}
+180  0.000578368999421631 #curr_max: 150 COMP: 798 REJ: 0 INST: 10 { WebUI:2 Auth:2 Persistence:2 Recommender:1 Image:3}
+190  2.1148241602270934 #curr_max: 400 COMP: 1119 REJ: 0 INST: 6 { WebUI:1 Auth:1 Persistence:1 Recommender:1 Image:2}
+200  40.3035134406619 #curr_max: 475 COMP: 2763 REJ: 4747 INST: 10 { WebUI:3 Auth:2 Persistence:2 Recommender:1 Image:2}

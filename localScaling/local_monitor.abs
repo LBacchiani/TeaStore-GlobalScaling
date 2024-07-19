@@ -15,7 +15,7 @@ class LocalMonitor(PrometheusInterface prometheus, String serviceName, WrapperIn
     Rat monitored_inst = baseN;
     Rat target = -1;
     List<Rat> reqs = list[];
-    Int i = 0;
+    Int i = 1;
     Rat time = monitoring_window()/time_unit_to_sec();
 
     Unit printReqs() {println(serviceName + ": " + toString(reqs));}
@@ -31,8 +31,10 @@ class LocalMonitor(PrometheusInterface prometheus, String serviceName, WrapperIn
     Unit check() {
         if(isEmpty(predictions)) reqs = appendright(reqs,target);
         else {
-            target = nth(predictions,i);
-            if(i < length(predictions)) i = i + 1;
+            if(i < length(predictions)) {
+                target = nth(predictions,i);
+                i = i + 1;
+            }
         }
         Rat instances = await prometheus!getV("instances", serviceName);
         Rat mcl = lookupUnsafe(serviceMCLs(), serviceName);

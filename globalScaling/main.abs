@@ -57,12 +57,12 @@ import * from Scaler;
     scaler.insertScalingElements(scale1Config, w1, "Scale1");        
     
     Scale2 s2 = new Scale2(cp, authLB, webUILB, persistenceLB, imageLB, prometheus, recommenderLB);
-    WrapperScaleInterface w2 = new WrapperScale(null, s2, 8);
+    WrapperScaleInterface w2 = new WrapperScale(null, s2, 11);
     List<Int> scale2Config = list[3, //webUI
                               2, //persistence
                               2, //auth
                               0, //recommender
-                              3]; //image      
+                              4]; //image      
     scaler.insertScalingElements(scale2Config, w2, "Scale2");   
 
          
