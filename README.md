@@ -25,9 +25,7 @@ To run the ABS code for global scaling:
 gen/erl/run
 ```
 
-If you want to test our mixing technique go to [workload_mixer.abs](abs-simulations/globalScaling/workload_mixer.abs) and [monitor.abs](abs-simulations/globalScaling/monitor.abs) and uncomment everything tagged with '//OUR MIXING TECHNIQUE' and comment everything tagged with '//LITERATURE MIXING TECHNIQUE'.
-
-If you want to use the mixing technique from [1] do viceversa.
+If you want to test our mixing technique go to [workload_mixer.abs](globalScaling/workload_mixer.abs) and [monitor.abs](globalScaling/monitor.abs) and uncomment everything tagged with '//OUR MIXING TECHNIQUE'.
 
 ### Local Scaling
 To compile the ABS code for local scaling (from abs-simulations/):
