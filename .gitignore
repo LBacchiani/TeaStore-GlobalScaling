@@ -2,3 +2,5 @@
 localScaling/gen/
 globalScaling/gen/
 .DS_Store
+
+*.jar

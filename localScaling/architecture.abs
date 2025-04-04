@@ -76,14 +76,8 @@ interface WebUIInterface {
 
 [SmartDeployCost : "{\"class\" : \"WebUI\",\"scenarios\" : [{\"name\" : \"default\",\"provide\" : -1,\"cost\" : {\"Cores\" : 1200, \"Memory\" : 512},\"sig\" : [{\"kind\" : \"require\",\"type\" : \"PrometheusInterface\"}, {\"kind\" : \"require\",\"type\" : \"PersistenceLoadBalancerInterface\"}, {\"kind\" : \"require\",\"type\" : \"AuthLoadBalancerInterface\"}, {\"kind\" : \"require\",\"type\" : \"ImageLoadBalancerInterface\"}, {\"kind\" : \"require\",\"type\" : \"RecommenderLoadBalancerInterface\"}],\"methods\" : []}]}"]
 class WebUI(PrometheusInterface prometheus, PersistenceLoadBalancerInterface persistence, AuthLoadBalancerInterface auth, ImageLoadBalancerInterface image, RecommenderLoadBalancerInterface recommender) implements WebUIInterface {
-    Result request(WebUILoadBalancerInterface balancer, Rat start) {
-        [Cost: speed_per_core() * time_unit_to_sec() * webUICores() / webUIMCL()] skip;
-        Rat stop = timeValue(now());
-        prometheus!push("latency", "WebUI", stop - start);
-        prometheus!push("completed", "WebUI", 1);
-        balancer!removeMessage();
+    Result unfoldOptional(Maybe<Fut<Result>> result) {
         Result res = Failure;
-        Maybe<Fut<Result>> result = await persistence!request();
         switch(result) {
             Just(fut) => {
                 await fut?;
@@ -91,81 +85,84 @@ class WebUI(PrometheusInterface prometheus, PersistenceLoadBalancerInterface per
             }
             _ => skip;
         }
-        // if (res != Failure) {
+        return res;
+    }
+    Result request(WebUILoadBalancerInterface balancer, Rat start) {
+        [Cost: speed_per_core() * time_unit_to_sec() * webUICores() / webUIMCL()] skip;
+        Rat stop = timeValue(now());
+        prometheus!push("latency", "WebUI", stop - start);
+        prometheus!push("completed", "WebUI", 1);
+        balancer!removeMessage();
+        // Result res = Failure;
+
+        Int n = 1 + random(5);
+        Maybe<Fut<Result>> result = await auth!request();
+        Result res = this.unfoldOptional(result);
+        while(n > 0) {
+            ////START//////
             result = await persistence!request();
-            switch(result) {
-                Just(fut) => {
-                    await fut?;
-                    res = fut.get;
-                }
-                _ => skip;
-            }
-        // }
-        // if (res != Failure) {
-            Int n = random(100);
-            if(n < 25) {
-                result = await persistence!request();
-                switch(result) {
-                    Just(fut) => {
-                        await fut?;
-                        res = fut.get;
-                    }
-                    _ => skip;
-                }
-            }
-        // }
-        // if (res != Failure) {
-            result = await auth!request();
-            switch(result) {
-                Just(fut) => {
-                    await fut?;
-                    res = fut.get;
-                }
-                _ => skip;
-            }
-        // }
-        // if (res != Failure) {
+            res = this.unfoldOptional(result);
+
+            result = await recommender!request();
+            res = this.unfoldOptional(result);
+
             result = await image!request();
-            switch(result) {
-                Just(fut) => {
-                    await fut?;
-                    res = fut.get;
-                }
-                _ => skip;
-            }
-        // }
-        // if (res != Failure) {
-            n = random(100);
-            if(n < 17) {
-                result = await image!request();
-                switch(result) {
-                    Just(fut) => {
-                        await fut?;
-                        res = fut.get;
-                    }
-                    _ => skip;
-                }
-            }
-        // }
-        // if (res != Failure) {
-            n = random(100);
-            if(n < 25) {
-                result = await recommender!request();
-                switch(result) {
-                    Just(fut) => {
-                        await fut?;
-                        res = fut.get;
-                    }
-                    _ => skip;
-                }
-            }
-        // }
+            res = this.unfoldOptional(result);
+
+            result = await image!request();
+            res = this.unfoldOptional(result);
+            n = n - 1;
+        }
+
+        ////END////
+
+        /////
+        // Result res = Failure;
+
+        // Maybe<Fut<Result>> result = await persistence!request();
+        // res = this.unfoldOptional(result);
+        // // if (res != Failure) {
+        //     result = await persistence!request();
+        //     res = this.unfoldOptional(result);
+        // // }
+        // // if (res != Failure) {
+        //     Int n = random(100);
+        //     if(n < 25) {
+        //         result = await persistence!request();
+        //         res = this.unfoldOptional(result);
+        //     }
+        // // }
+        // // if (res != Failure) {
+        //     result = await auth!request();
+        //     res = this.unfoldOptional(result);
+
+        // // }
+        // // if (res != Failure) {
+        //     result = await image!request();
+        //     res = this.unfoldOptional(result);
+
+        // // }
+        // // if (res != Failure) {
+        //     n = random(100);
+        //     if(n < 17) {
+        //         result = await image!request();
+        //         res = this.unfoldOptional(result);
+        //     }
+        // // }
+        // // if (res != Failure) {
+        //     n = random(100);
+        //     if(n < 25) {
+        //         result = await recommender!request();
+        //         res = this.unfoldOptional(result);
+        //     }
+        // // }
         prometheus!push("completed global", "", 1);
         stop = timeValue(now());
         prometheus!push("latency global", "", stop - start);
         return res;
     }
 }
+
 
 ////
 
